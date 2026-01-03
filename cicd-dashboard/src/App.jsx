@@ -2,6 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { Activity, Clock, CheckCircle, Search, User } from 'lucide-react';
 
+// --- CONFIGURATION ---
+const GITLAB_API = "https://gitlab.com/api/v4";
+const PROJECT_ID = import.meta.env.VITE_GITLAB_PROJECT_ID; 
+const TOKEN = import.meta.env.VITE_GITLAB_TOKEN;
+
 // --- MOCK DATA (Replace this later with API calls) ---
 const mockPipelineData = [
   { date: '1', count: 5 }, { date: '5', count: 8 }, { date: '10', count: 12 },
@@ -34,7 +39,7 @@ const MetricCard = ({ title, value, subtext }) => (
   </div>
 );
 
-// 2. Main Dashboard Layout
+// Main Dashboard Layout
 export default function Dashboard() {
   // In a real app, you would fetch data here
   const [metrics, setMetrics] = useState({
