@@ -11,6 +11,11 @@ function getDateDaysAgo(days) {
   return date.toISOString(); // Returns "2025-12-04T10:00:00.000Z"
 }
 
+const getSeconds = (start, end) => {
+  if (!start || !end) return 0;
+  return (new Date(end) - new Date(start)) / 1000;
+};
+
 export function useDashboardData(days) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -27,10 +32,10 @@ export function useDashboardData(days) {
     async function fetchData() {
       try {
         const headers = { "PRIVATE-TOKEN": TOKEN };
-        const lastMonth = getDateDaysAgo(days || 90);
+        const daysquery = getDateDaysAgo(days || 90);
         
         const pipeRes = await fetch(
-          `${GITLAB_API}/projects/${PROJECT_ID}/pipelines?per_page=100&scope=finished&updated_after=${lastMonth}`,
+          `${GITLAB_API}/projects/${PROJECT_ID}/pipelines?per_page=100&scope=finished&created_after=${daysquery}`,
           { headers }
         );
         
@@ -44,20 +49,49 @@ export function useDashboardData(days) {
         const rawPipelines = await pipeRes.json();
         const rawContributors = contribRes.ok ? await contribRes.json() : [];
 
+        const processedPipelines = rawPipelines.map(p => {
+            let runSeconds = p.duration;
+          
+            if (!runSeconds && p.started_at && p.updated_at) {
+                runSeconds = getSeconds(p.started_at, p.updated_at);
+            }
+            
+            if (!runSeconds && p.created_at && p.updated_at) {
+                runSeconds = getSeconds(p.created_at, p.updated_at);
+            }
+
+            let queueSeconds = 0;
+            if (p.created_at && p.started_at) {
+                queueSeconds = getSeconds(p.created_at, p.started_at);
+            }
+
+            // console.log(`Pipeline #${p.id} - Duration: ${runSeconds}s, Queue: ${queueSeconds}s`);
+
+            return {
+                ...p,
+                durationSeconds: runSeconds || 0,
+                queueSeconds: queueSeconds || 0
+            };
+            });
+
         // Metrics
         const total = rawPipelines.length;
         const successCount = rawPipelines.filter(p => p.status === 'success').length;
         const passRate = total ? Math.round((successCount / total) * 100) + '%' : '0%';
-        const totalDuration = rawPipelines.reduce((acc, p) => acc + (p.duration || 0), 0);
-        const avgTime = total ? Math.round((totalDuration / total) / 60) : 0;
-
-        // Pipeline List
-        const formattedPipelines = rawPipelines.slice(0, 7).map(p => ({
-          id: p.id,
-          time: Math.round((p.duration || 0) / 60) + 'm',
-          status: p.status === 'success' ? 'Pass' : 'Fail'
-        }));
-
+        
+        const validRuns = processedPipelines.filter(p => p.durationSeconds > 300 && p.durationSeconds < 3600); // Ignore runs < 1 min (noise)
+        const totalSeconds = validRuns.reduce((acc, p) => acc + p.durationSeconds, 0);
+        const avgTime = validRuns.length 
+            ? Math.round((totalSeconds / validRuns.length) / 60) 
+            : 0;
+        
+        console.log(`Computed Metrics - Total: ${total}, Pass Rate: ${passRate}, Avg Time: ${avgTime} mins`);
+        const formattedPipelines = processedPipelines.slice(0, 7).map(p => ({
+            id: p.id,
+            time: Math.round(p.durationSeconds / 60) + 'm',   // converted to minutes
+            status: p.status === 'success' ? 'Pass' : 'Fail'
+            }));
+        
         // Scenarios Chart (Runs per Day)
         const dateMap = {};
         rawPipelines.forEach(p => {
@@ -66,22 +100,11 @@ export function useDashboardData(days) {
         });
         const chartArray = Object.keys(dateMap).map(date => ({ date, count: dateMap[date] })).reverse();
 
-        // Compute Chart (Mins per Month)
-        const monthMap = {};
-        rawPipelines.forEach(p => {
-          const date = new Date(p.created_at);
-          const month = date.toLocaleString('default', { month: 'short' });
-          const mins = Math.round((p.duration || 0) / 60);
-          monthMap[month] = (monthMap[month] || 0) + mins;
-        });
-        const computeArray = Object.keys(monthMap).map(m => ({ month: m, mins: monthMap[m] }));
-
         // Update all state at once
         setData({
           metrics: { total, passRate, avgTime },
           pipelines: formattedPipelines,
           chartData: chartArray,
-          computeData: computeArray,
           contributors: rawContributors.slice(0, 5)
         });
 

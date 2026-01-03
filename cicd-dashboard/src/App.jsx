@@ -16,7 +16,7 @@ export default function Dashboard() {
   const [selectedDays, setSelectedDays] = useState(90);
 
   // 2. HOOK: Pass the selectedDays to the hook
-  const { metrics, chartData, computeData, pipelines, contributors, loading, error } = useDashboardData(selectedDays);
+  const { metrics, chartData, pipelines, contributors, loading, error } = useDashboardData(selectedDays);
 
   return (
     <div className="min-h-screen bg-gray-50 p-8 font-sans">
@@ -103,7 +103,7 @@ export default function Dashboard() {
 
       {/* Bottom Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+        <div className="lg:col-span-3 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
           <h3 className="font-semibold mb-4">Recent Pipelines</h3>
           <table className="w-full text-sm text-left">
             <thead className="text-gray-500 border-b">
@@ -127,7 +127,7 @@ export default function Dashboard() {
           </table>
         </div>
 
-        <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+        {/* <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
           <h3 className="font-semibold mb-6">Compute Usage</h3>
           <div className="h-64" style={{ height: '300px' }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -140,7 +140,7 @@ export default function Dashboard() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </div> */}
       </div>
 
     </div>
