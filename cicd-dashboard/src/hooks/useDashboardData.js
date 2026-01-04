@@ -117,10 +117,13 @@ export function useDashboardData(days, branch='All') {
             : 0;
         
         console.log(`Computed Metrics - Total: ${total}, Pass Rate: ${passRate}, Avg Time: ${avgTime} mins`);
-        const formattedPipelines = processedPipelines.slice(0, 7).map(p => ({
-            id: p.id,
-            time: Math.round(p.durationSeconds / 60) + 'm',   // converted to minutes
-            status: p.status === 'success' ? 'Pass' : 'Fail'
+        const formattedPipelines = processedPipelines
+            .filter(p => p.durationSeconds <= 3600) 
+            .slice(0, 7)
+            .map(p => ({
+                id: p.id,
+                time: Math.round(p.durationSeconds / 60) + 'm',
+                status: p.status === 'success' ? 'Pass' : 'Fail'
             }));
         
         // Scenarios Chart (Runs per Day)
