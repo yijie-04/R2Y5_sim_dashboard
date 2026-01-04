@@ -8,4 +8,5 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  base: '/R2Y5_sim_dashboard/',
 })
