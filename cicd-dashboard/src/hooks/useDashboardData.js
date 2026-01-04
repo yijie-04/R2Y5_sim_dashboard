@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 
 const GITLAB_API = "https://gitlab.com/api/v4";
 const PROJECT_ID = import.meta.env.VITE_GITLAB_PROJECT_ID; 
-const TOKEN = import.meta.env.VITE_GITLAB_TOKEN;
+const TOKEN = import.meta.env.VITE_SIM_DASHBOARD;
 
 function getDateDaysAgo(days) {
   const date = new Date();
