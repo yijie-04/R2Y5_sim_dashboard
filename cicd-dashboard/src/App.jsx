@@ -13,7 +13,8 @@ const MetricCard = ({ title, value, subtext }) => (
 
 export default function Dashboard() {
   const [selectedDays, setSelectedDays] = useState(90);
-  const { metrics, chartData, pipelines, contributors, loading, error } = useDashboardData(selectedDays);
+  const [selectedBranch, setSelectedBranch] = useState('All');
+  const { metrics, chartData, pipelines, contributors, loading, error } = useDashboardData(selectedDays, selectedBranch);
 
   return (
     <div className="min-h-screen bg-gray-50 p-8 font-sans">
@@ -23,6 +24,37 @@ export default function Dashboard() {
         <h1 className="text-2xl font-bold text-gray-900">aUToronto Simulation Dashboard</h1>
         
         <div className="flex gap-4">
+          {/* Branch Selector */}
+          <div className="relative">
+            {/* Git Branch Icon (Inline SVG) */}
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            >
+              <line x1="6" y1="3" x2="6" y2="15"></line>
+              <circle cx="18" cy="6" r="3"></circle>
+              <circle cx="6" cy="18" r="3"></circle>
+              <path d="M18 9a9 9 0 0 1-9 9"></path>
+            </svg>
+            <select 
+              value={selectedBranch}
+              onChange={(e) => setSelectedBranch(e.target.value)}
+              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer hover:bg-gray-50"
+            >
+              <option value="All">All Branches</option>
+              <option value="master">master</option>
+              <option value="r2y5-simulation">r2y5-simulation</option>
+              <option value="r2y5-sim-cicd">r2y5-sim-cicd</option>
+              <option value="simulation-CICD">simulation-CICD</option>
+            </select>
+          </div>
+          
           {/* DATE SELECTOR */}
           <div className="relative">
             <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
@@ -38,7 +70,7 @@ export default function Dashboard() {
             </select>
           </div>
 
-          <button className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium">Share</button>
+          {/* <button className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium">Share</button> */}
         </div>
       </header>
 

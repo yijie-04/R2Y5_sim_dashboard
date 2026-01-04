@@ -39,20 +39,19 @@ export function useDashboardData(days, branch='All') {
             pipelineUrl += `&ref=${branch}`;
         }
 
-        const pipeRes = await fetch(
-          `${GITLAB_API}/projects/${PROJECT_ID}/pipelines?per_page=100&scope=finished&created_after=${daysquery}`,
-          { headers }
-        );
+        const pipeRes = await fetch(pipelineUrl, { headers });
+
+        const commitRef = (branch && branch !== 'All') ? branch : 'master';
 
         const commitsRes = await fetch(
-          `${GITLAB_API}/projects/${PROJECT_ID}/repository/commits?created_after=${daysquery}&per_page=100`, 
+          `${GITLAB_API}/projects/${PROJECT_ID}/repository/commits?created_after=${daysquery}&per_page=100&ref_name=${commitRef}`, 
           { headers }
         );
         
-        const contribRes = await fetch(
-          `${GITLAB_API}/projects/${PROJECT_ID}/repository/contributors`,
-          { headers }
-        );
+        // const contribRes = await fetch(
+        //   `${GITLAB_API}/projects/${PROJECT_ID}/repository/contributors`,
+        //   { headers }
+        // );
 
         // const contribRes = await fetch(
         //   `${GITLAB_API}/projects/${PROJECT_ID}/repository/contributors?order_by=commits&sort=desc`,
@@ -82,19 +81,16 @@ export function useDashboardData(days, branch='All') {
         if (!pipeRes.ok) throw new Error("Failed to fetch pipelines. Check ID/Token.");
         
         const rawPipelines = await pipeRes.json();
-        const rawContributors = contribRes.ok ? await contribRes.json() : [];
+        // const rawContributors = contribRes.ok ? await contribRes.json() : [];
 
         const processedPipelines = rawPipelines.map(p => {
             let runSeconds = p.duration;
-          
             if (!runSeconds && p.started_at && p.updated_at) {
                 runSeconds = getSeconds(p.started_at, p.updated_at);
             }
-            
             if (!runSeconds && p.created_at && p.updated_at) {
                 runSeconds = getSeconds(p.created_at, p.updated_at);
             }
-
             let queueSeconds = 0;
             if (p.created_at && p.started_at) {
                 queueSeconds = getSeconds(p.created_at, p.started_at);
@@ -153,7 +149,7 @@ export function useDashboardData(days, branch='All') {
     }
 
     fetchData();
-  }, [days]);
+  }, [days, branch]);
 
   return { ...data, loading, error };
 }
