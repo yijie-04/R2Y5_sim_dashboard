@@ -12,10 +12,7 @@ const MetricCard = ({ title, value, subtext }) => (
 );
 
 export default function Dashboard() {
-  // 1. STATE: Keep track of the user's choice (default to 90 days)
   const [selectedDays, setSelectedDays] = useState(90);
-
-  // 2. HOOK: Pass the selectedDays to the hook
   const { metrics, chartData, pipelines, contributors, loading, error } = useDashboardData(selectedDays);
 
   return (
@@ -60,7 +57,7 @@ export default function Dashboard() {
       {/* Top Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <MetricCard 
-          title="Total Scenarios Run" 
+          title="Total Pipelines Run" 
           value={metrics.total} 
           subtext={`In the last ${selectedDays} days`} 
         />

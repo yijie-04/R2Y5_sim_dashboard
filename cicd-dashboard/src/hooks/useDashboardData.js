@@ -16,7 +16,7 @@ const getSeconds = (start, end) => {
   return (new Date(end) - new Date(start)) / 1000;
 };
 
-export function useDashboardData(days) {
+export function useDashboardData(days, branch='All') {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
@@ -33,9 +33,19 @@ export function useDashboardData(days) {
       try {
         const headers = { "PRIVATE-TOKEN": TOKEN };
         const daysquery = getDateDaysAgo(days || 90);
-        
+
+        let pipelineUrl = `${GITLAB_API}/projects/${PROJECT_ID}/pipelines?per_page=100&scope=finished&created_after=${daysquery}`;
+        if (branch && branch !== 'All') {
+            pipelineUrl += `&ref=${branch}`;
+        }
+
         const pipeRes = await fetch(
           `${GITLAB_API}/projects/${PROJECT_ID}/pipelines?per_page=100&scope=finished&created_after=${daysquery}`,
+          { headers }
+        );
+
+        const commitsRes = await fetch(
+          `${GITLAB_API}/projects/${PROJECT_ID}/repository/commits?created_after=${daysquery}&per_page=100`, 
           { headers }
         );
         
@@ -43,6 +53,31 @@ export function useDashboardData(days) {
           `${GITLAB_API}/projects/${PROJECT_ID}/repository/contributors`,
           { headers }
         );
+
+        // const contribRes = await fetch(
+        //   `${GITLAB_API}/projects/${PROJECT_ID}/repository/contributors?order_by=commits&sort=desc`,
+        //   { headers }
+        // );
+
+        const rawCommits = commitsRes.ok ? await commitsRes.json() : [];
+        console.log("Fetched Commits:", rawCommits);
+
+        const authorStats = {};
+
+        rawCommits.forEach(commit => {
+            console.log(commit);
+            const email = commit.author_email;
+            const name = commit.author_name;
+
+            if (!authorStats[email]) {
+                authorStats[email] = { name: name, email: email, count: 0 };
+            }
+            authorStats[email].count += 1;
+        });
+
+        const topContributors = Object.values(authorStats)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
 
         if (!pipeRes.ok) throw new Error("Failed to fetch pipelines. Check ID/Token.");
         
@@ -105,7 +140,7 @@ export function useDashboardData(days) {
           metrics: { total, passRate, avgTime },
           pipelines: formattedPipelines,
           chartData: chartArray,
-          contributors: rawContributors.slice(0, 5)
+          contributors: topContributors
         });
 
         setLoading(false);
