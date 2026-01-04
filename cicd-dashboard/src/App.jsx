@@ -1,6 +1,6 @@
-import React, { useState } from 'react'; // Added useState
+import React, { useState } from 'react'; 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { Search, User, Loader2, Calendar } from 'lucide-react'; // Added Calendar icon
+import { Search, User, Loader2, Calendar } from 'lucide-react'; 
 import { useDashboardData } from './hooks/useDashboardData';
 
 const MetricCard = ({ title, value, subtext }) => (
