@@ -21,6 +21,18 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50 p-8 font-sans">
 
+      {/* Loading / Error States */}
+      {loading && (
+        <div className="fixed inset-0 bg-white/50 flex items-center justify-center z-50">
+          <div className="bg-white p-4 rounded-lg shadow-lg flex items-center gap-3">
+             <Loader2 className="animate-spin text-blue-600"/> 
+             <span>Updating data...</span>
+          </div>
+        </div>
+      )}
+      
+      {error && <div className="text-red-500 mb-4 p-4 bg-red-50 rounded">Error: {error}</div>}
+
       {/* Global Header with Interactive Dropdown */}
       <header className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold text-gray-900">aUToronto Simulation Dashboard</h1>
@@ -100,23 +112,11 @@ export default function Dashboard() {
           </button>
         </div>
 
-      {/* Loading / Error States */}
-      {loading && (
-        <div className="fixed inset-0 bg-white/50 flex items-center justify-center z-50">
-          <div className="bg-white p-4 rounded-lg shadow-lg flex items-center gap-3">
-             <Loader2 className="animate-spin text-blue-600"/> 
-             <span>Updating data...</span>
-          </div>
-        </div>
-      )}
-      
-      {error && <div className="text-red-500 mb-4 p-4 bg-red-50 rounded">Error: {error}</div>}
-
       {/* --- TAB 1: SIMULATION METRICS --- */}
       {activeTab === 'dashboard' && (
         <>
           {/* Top Metrics Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 mt-8">
             <MetricCard title="Total Pipelines Run" value={metrics.total} subtext={`In the last ${selectedDays} days`} />
             <MetricCard title="Pass Rate" value={metrics.passRate} subtext="Success / Total" />
             <MetricCard title="Runtime per pipeline (mins)" value={metrics.avgTime} subtext="Average Duration" />
