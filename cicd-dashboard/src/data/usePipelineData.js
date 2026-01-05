@@ -5,7 +5,10 @@ export const PIPELINE_DETAILS = {
     scenarioName: "Green traffic light",
     ciLink: "www.gitlab.com",
     branch: "autopath",
-    mapImage: "https://placehold.co/400x400/e2e8f0/94a3b8?text=Map+View", // TODO
+    // mapImage: "https://placehold.co/400x400/e2e8f0/94a3b8?text=Map+View", // TODO
+    lat: 42.300805, 
+    lng: -83.698180,
+    zoom: 16.7,
     generalMetrics: [
       { label: "Collision count", value: "0", status: "neutral" },
       { label: "Traffic sign behaviour", value: "True", status: "good" },

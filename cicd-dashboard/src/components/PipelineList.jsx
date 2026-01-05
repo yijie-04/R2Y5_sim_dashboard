@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, ExternalLink, Play, Pause } from 'lucide-react';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import { PIPELINE_DETAILS } from '../data/usePipelineData';
+import CleanMap from './CleanMap';
+import OSMMap from './OSMMap';
 
 const StatusBadge = ({ status }) => {
   const isPass = status === 'Pass' || status === 'good' || status === 'True';
@@ -55,14 +57,38 @@ export default function PipelineList({ pipelines }) {
             {isExpanded && (
               <div className="bg-gray-100 p-6 border-t border-gray-200 shadow-inner">
                 <div className="flex flex-col lg:flex-row gap-6">
-                  
-                  {/* LEFT: MAP & PLAYBACK */}
+
+                  {/* LEFT: MAP SECTION */}
                   <div className="w-full lg:w-1/3 relative rounded-lg overflow-hidden border border-gray-300 bg-gray-200 aspect-square">
-                    <img src={details.mapImage} alt="Sim Map" className="w-full h-full object-cover opacity-80" />
-                    <div className="absolute bottom-4 left-4 flex gap-2">
-                       <button className="bg-black/75 text-white p-2 rounded hover:bg-black"><Play size={16}/></button>
+                    
+                    <OSMMap 
+                      lat={details.lat} 
+                      lng={details.lng} 
+                      zoom={details.zoom} 
+                    />
+
+                    <div className="absolute bottom-4 left-4 z-[400]"> 
+                      <button className="bg-black/75 text-white p-2 rounded hover:bg-black">
+                          <Play size={16}/>
+                      </button>
                     </div>
                   </div>
+
+                  {/* LEFT: MAP SECTION */}
+                  {/* <div className="w-full lg:w-1/3 relative rounded-lg overflow-hidden border border-gray-300 bg-gray-200 aspect-square">
+                    
+                    <CleanMap 
+                      lat={details.lat} 
+                      lng={details.lng} 
+                      zoom={details.zoom} 
+                    />
+
+                    <div className="absolute bottom-4 left-4 flex gap-2 pointer-events-none">
+                      <div className="pointer-events-auto">
+                          <button className="bg-black/75 text-white p-2 rounded hover:bg-black"><Play size={16}/></button>
+                      </div>
+                    </div>
+                  </div> */}
 
                   {/* MIDDLE: GENERAL METRICS */}
                   <div className="flex-1 space-y-4">
