@@ -9,4 +9,13 @@ export default defineConfig({
     tailwindcss(),
   ],
   base: '/R2Y5_sim_dashboard/',
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      }
+    }
+  }
 })

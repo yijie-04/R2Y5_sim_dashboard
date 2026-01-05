@@ -1,4 +1,4 @@
-// src/hooks/useDashboardData.js
+// src/data/useDashboardData.js
 import { useState, useEffect } from 'react';
 
 const GITLAB_API = "https://gitlab.com/api/v4";
@@ -31,6 +31,16 @@ export function useDashboardData(days, branch='All') {
   useEffect(() => {
     async function fetchData() {
       try {
+        // Check if environment variables are configured
+        if (!PROJECT_ID || !TOKEN) {
+          throw new Error(
+            'GitLab credentials not configured. ' +
+            (import.meta.env.DEV 
+              ? 'Please create a .env file with VITE_GITLAB_PROJECT_ID and VITE_GITLAB_TOKEN.' 
+              : 'Please contact the administrator to configure GitHub repository secrets.')
+          );
+        }
+
         const headers = { "PRIVATE-TOKEN": TOKEN };
         const daysquery = getDateDaysAgo(days || 90);
 
