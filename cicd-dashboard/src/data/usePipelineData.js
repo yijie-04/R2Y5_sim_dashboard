@@ -8,7 +8,7 @@ export const PIPELINE_DETAILS = {
     // mapImage: "https://placehold.co/400x400/e2e8f0/94a3b8?text=Map+View", // TODO
     lat: 42.300805, 
     lng: -83.698180,
-    zoom: 16.8,
+    zoom: 17,
     generalMetrics: [
       { label: "Collision count", value: "0", status: "neutral" },
       { label: "Traffic sign behaviour", value: "True", status: "good" },
