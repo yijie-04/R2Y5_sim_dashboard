@@ -1,7 +1,7 @@
 import React, { useState } from 'react'; 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { Search, User, Loader2, Calendar } from 'lucide-react'; 
-import { useDashboardData } from './hooks/useDashboardData';
+import { useDashboardData } from './data/useDashboardData';
 
 const MetricCard = ({ title, value, subtext }) => (
   <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
