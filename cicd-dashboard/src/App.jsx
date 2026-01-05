@@ -187,7 +187,7 @@ export default function Dashboard() {
 
       {/* --- TAB 2: INDIVIDUAL PIPELINES --- */}
       {activeTab === 'details' && (
-        <div className="animate-fade-in mt-8">
+        <div className="animate-fade-in mt-12">
             <h2 className="text-lg font-semibold text-gray-800 mb-4">
                 Pipeline Runs ({pipelines.length})
             </h2>
