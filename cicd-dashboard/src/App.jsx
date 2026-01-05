@@ -12,21 +12,21 @@ const MetricCard = ({ title, value, subtext }) => (
 );
 
 export default function Dashboard() {
+  const [activeTab, setActiveTab] = useState('dashboard'); 
   const [selectedDays, setSelectedDays] = useState(90);
   const [selectedBranch, setSelectedBranch] = useState('All');
   const { metrics, chartData, pipelines, contributors, loading, error } = useDashboardData(selectedDays, selectedBranch);
 
   return (
     <div className="min-h-screen bg-gray-50 p-8 font-sans">
-      
-      {/* Header with Interactive Dropdown */}
+
+      {/* Global Header with Interactive Dropdown */}
       <header className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold text-gray-900">aUToronto Simulation Dashboard</h1>
         
         <div className="flex gap-4">
           {/* Branch Selector */}
           <div className="relative">
-            {/* Git Branch Icon (Inline SVG) */}
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
               className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" 
@@ -69,10 +69,35 @@ export default function Dashboard() {
               <option value="365">Last Year</option>
             </select>
           </div>
-
-          {/* <button className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium">Share</button> */}
         </div>
       </header>
+
+      {/* TAB NAVIGATION */}
+      <div className="bg-gray-100 p-1 rounded-lg inline-flex">
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            className={`
+              px-4 py-1.5 text-sm font-medium rounded-md transition-all
+              ${activeTab === 'dashboard'
+                ? 'bg-white text-gray-900 shadow-sm'   // Active Style (White Pill)
+                : 'text-gray-500 hover:text-gray-900'}  // Inactive Style
+            `}
+          >
+            Simulation Metrics
+          </button>
+
+          <button
+            onClick={() => setActiveTab('details')}
+            className={`
+              px-4 py-1.5 text-sm font-medium rounded-md transition-all
+              ${activeTab === 'details'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-500 hover:text-gray-900'}
+            `}
+          >
+            Individual Pipelines
+          </button>
+        </div>
 
       {/* Loading / Error States */}
       {loading && (
@@ -86,91 +111,85 @@ export default function Dashboard() {
       
       {error && <div className="text-red-500 mb-4 p-4 bg-red-50 rounded">Error: {error}</div>}
 
-      {/* Top Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <MetricCard 
-          title="Total Pipelines Run" 
-          value={metrics.total} 
-          subtext={`In the last ${selectedDays} days`} 
-        />
-        <MetricCard title="Pass Rate" value={metrics.passRate} subtext="Success / Total" />
-        <MetricCard title="Runtime per pipeline (mins)" value={metrics.avgTime} subtext="Average Duration" />
-      </div>
-
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-          <h3 className="font-semibold mb-6">Scenarios Trend</h3>
-          <div className="h-64" style={{ height: '300px' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="date" axisLine={false} tickLine={false} />
-                <YAxis axisLine={false} tickLine={false} />
-                <Tooltip />
-                <Line type="monotone" dataKey="count" stroke="black" strokeWidth={3} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
+      {/* --- TAB 1: SIMULATION METRICS --- */}
+      {activeTab === 'dashboard' && (
+        <>
+          {/* Top Metrics Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <MetricCard title="Total Pipelines Run" value={metrics.total} subtext={`In the last ${selectedDays} days`} />
+            <MetricCard title="Pass Rate" value={metrics.passRate} subtext="Success / Total" />
+            <MetricCard title="Runtime per pipeline (mins)" value={metrics.avgTime} subtext="Average Duration" />
           </div>
-        </div>
 
-        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-          <h3 className="font-semibold mb-4">Contributors</h3>
-          {contributors.map((c, i) => (
-            <div key={i} className="flex items-center gap-3 mb-4 last:mb-0">
-              <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center font-bold text-gray-600">
-                {c.name ? c.name.charAt(0) : <User size={20}/>}
-              </div>
-              <div className="overflow-hidden">
-                <div className="text-sm font-medium truncate">{c.name}</div>
-                <div className="text-xs text-gray-500 truncate">{c.email}</div>
+          {/* Pipelines Chart */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+              <h3 className="font-semibold mb-6">Scenarios Trend</h3>
+              <div className="h-64" style={{ height: '300px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="date" axisLine={false} tickLine={false} />
+                    <YAxis axisLine={false} tickLine={false} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="count" stroke="black" strokeWidth={3} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
 
-      {/* Bottom Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-3 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-          <h3 className="font-semibold mb-4">Recent Pipelines</h3>
-          <table className="w-full text-sm text-left">
-            <thead className="text-gray-500 border-b">
-              <tr>
-                <th className="pb-2 font-normal">ID</th>
-                <th className="pb-2 font-normal text-right">Time</th>
-                <th className="pb-2 font-normal text-right">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pipelines.map((p) => (
-                <tr key={p.id} className="border-b last:border-0">
-                  <td className="py-3 font-medium">#{p.id}</td>
-                  <td className="py-3 text-right">{p.time}</td>
-                  <td className={`py-3 text-right ${p.status === 'Pass' ? 'text-green-600' : 'text-red-600'}`}>
-                    {p.status}
-                  </td>
-                </tr>
+            {/* Contributors List */}
+            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+              <h3 className="font-semibold mb-4">Contributors</h3>
+              {contributors.map((c, i) => (
+                <div key={i} className="flex items-center gap-3 mb-4 last:mb-0">
+                  <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center font-bold text-gray-600">
+                    {c.name ? c.name.charAt(0) : <User size={20}/>}
+                  </div>
+                  <div className="overflow-hidden">
+                    <div className="text-sm font-medium truncate">{c.name}</div>
+                    <div className="text-xs text-gray-500 truncate">{c.email}</div>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-          <h3 className="font-semibold mb-6">Compute Usage</h3>
-          <div className="h-64" style={{ height: '300px' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={computeData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="month" axisLine={false} tickLine={false} fontSize={12} />
-                <YAxis axisLine={false} tickLine={false} fontSize={12} />
-                <Tooltip />
-                <Bar dataKey="mins" fill="black" radius={[4, 4, 0, 0]} barSize={20} />
-              </BarChart>
-            </ResponsiveContainer>
+            </div>
           </div>
-        </div> */}
-      </div>
+
+          {/* Recent Pipelines Table */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-3 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+              <h3 className="font-semibold mb-4">Recent Pipelines</h3>
+              <table className="w-full text-sm text-left">
+                <thead className="text-gray-500 border-b">
+                  <tr>
+                    <th className="pb-2 font-normal">ID</th>
+                    <th className="pb-2 font-normal text-right">Time</th>
+                    <th className="pb-2 font-normal text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pipelines.map((p) => (
+                    <tr key={p.id} className="border-b last:border-0">
+                      <td className="py-3 font-medium">#{p.id}</td>
+                      <td className="py-3 text-right">{p.time}</td>
+                      <td className={`py-3 text-right ${p.status === 'Pass' ? 'text-green-600' : 'text-red-600'}`}>
+                        {p.status}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* --- TAB 2: INDIVIDUAL PIPELINES --- */}
+      {activeTab === 'details' && (
+        <div className="flex flex-col items-center justify-center h-96 bg-white border border-dashed border-gray-300 rounded-xl">
+            <div className="text-gray-400 text-lg">Detailed View Coming Soon...</div>
+        </div>
+      )}
 
     </div>
   );
