@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { Search, User, Loader2, Calendar } from 'lucide-react'; 
 import { useDashboardData } from './data/useDashboardData';
+import PipelineList from './components/PipelineList.jsx';
 
 const MetricCard = ({ title, value, subtext }) => (
   <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
@@ -186,8 +187,13 @@ export default function Dashboard() {
 
       {/* --- TAB 2: INDIVIDUAL PIPELINES --- */}
       {activeTab === 'details' && (
-        <div className="flex flex-col items-center justify-center h-96 bg-white border border-dashed border-gray-300 rounded-xl">
-            <div className="text-gray-400 text-lg">Detailed View Coming Soon...</div>
+        <div className="animate-fade-in">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">
+                Pipeline Runs ({pipelines.length})
+            </h2>
+            
+            {/* 2. Use the component and pass the filtered pipelines */}
+            <PipelineList pipelines={pipelines} />
         </div>
       )}
 
