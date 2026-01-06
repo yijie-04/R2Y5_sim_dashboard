@@ -4,6 +4,7 @@ import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import { PIPELINE_DETAILS } from '../data/usePipelineData';
 import CleanMap from './CleanMap';
 import OSMMap from './OSMMap';
+import SimulationMap from './SimulationMap';
 
 const StatusBadge = ({ status }) => {
   const isPass = status === 'Pass' || status === 'good' || status === 'True';
@@ -60,18 +61,10 @@ export default function PipelineList({ pipelines }) {
 
                   {/* LEFT: MAP SECTION */}
                   <div className="w-full lg:w-1/3 relative rounded-lg overflow-hidden border border-gray-300 bg-gray-200 aspect-square">
-                    
-                    <OSMMap 
-                      lat={details.lat} 
-                      lng={details.lng} 
-                      zoom={details.zoom} 
+                    <SimulationMap 
+                      latCsv="./example/_new_lat_.csv" 
+                      lngCsv="./example/_new_long_.csv" 
                     />
-
-                    <div className="absolute bottom-4 left-4 z-[400]"> 
-                      <button className="bg-black/75 text-white p-2 rounded hover:bg-black">
-                          <Play size={16}/>
-                      </button>
-                    </div>
                   </div>
 
                   {/* LEFT: MAP SECTION */}
@@ -126,14 +119,14 @@ export default function PipelineList({ pipelines }) {
                      </div>
                      
                      {/* Mini Chart */}
-                     <div className="h-24">
+                     {/* <div className="h-24">
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={details.speedChart}>
                                 <Line type="monotone" dataKey="val" stroke="#000" strokeWidth={2} dot={false} />
                             </LineChart>
                         </ResponsiveContainer>
                         <div className="text-xs text-gray-400 text-center mt-1">Acceleration Profile</div>
-                     </div>
+                     </div> */}
                   </div>
 
                 </div>
