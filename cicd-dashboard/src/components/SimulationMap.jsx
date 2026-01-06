@@ -9,9 +9,9 @@ import geoJsonData from '../map/mcity_geo.json';
 
 const carIcon = L.divIcon({
   className: 'custom-car-icon',
-  html: `<div style="width: 20px; height: 40px; background-color: #ef4444; border: 2px solid white; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.5);"></div>`,
-  iconSize: [5, 10],
-  iconAnchor: [10, 20]
+  html: `<div style="width: 20px; height: 20px; background-color: #ef4444; border: 2px solid white; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.5);"></div>`,
+  iconSize: [20, 20],
+  iconAnchor: [10, 10]
 });
 
 function MapController({ center, zoom }) {
