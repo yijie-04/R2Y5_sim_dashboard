@@ -16,6 +16,33 @@ const getSeconds = (start, end) => {
   return (new Date(end) - new Date(start)) / 1000;
 };
 
+async function fetchAllPipelines(initialUrl, headers) {
+  let allPipelines = [];
+  let nextUrl = initialUrl;
+  let pageCount = 0;
+  const MAX_PAGES = 10; // 10 pages at 100 per page = 1,000 results
+
+  while (nextUrl && pageCount < MAX_PAGES) {
+    const response = await fetch(nextUrl, { headers });
+    if (!response.ok) break;
+
+    const data = await response.json();
+    allPipelines = [...allPipelines, ...data];
+
+    // Check Link Header
+    const linkHeader = response.headers.get("link");
+    if (linkHeader) {
+      const links = linkHeader.split(',');
+      const next = links.find(s => s.includes('rel="next"'));
+      nextUrl = next ? next.match(/<(.*?)>/)[1] : null;
+    } else {
+      nextUrl = null;
+    }
+    pageCount++;
+  }
+  return allPipelines;
+}
+
 export function useDashboardData(days, branch='All') {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -90,7 +117,7 @@ export function useDashboardData(days, branch='All') {
 
         if (!pipeRes.ok) throw new Error("Failed to fetch pipelines. Check ID/Token.");
         
-        const rawPipelines = await pipeRes.json();
+        const rawPipelines = await fetchAllPipelines(pipelineUrl, headers);
         // const rawContributors = contribRes.ok ? await contribRes.json() : [];
 
         const processedPipelines = rawPipelines.map(p => {
@@ -129,7 +156,7 @@ export function useDashboardData(days, branch='All') {
         console.log(`Computed Metrics - Total: ${total}, Pass Rate: ${passRate}, Avg Time: ${avgTime} mins`);
         const formattedPipelines = processedPipelines
             .filter(p => p.durationSeconds <= 3600) 
-            .slice(0, 7)
+            .slice(0, 20)
             .map(p => ({
                 id: p.id,
                 time: Math.round(p.durationSeconds / 60) + 'm',

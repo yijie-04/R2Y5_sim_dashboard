@@ -3,6 +3,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Search, User, Loader2, Calendar } from 'lucide-react'; 
 import { useDashboardData } from './data/useDashboardData';
 import PipelineList from './components/PipelineList.jsx';
+import AIChat from './components/chat.jsx';
 
 const MetricCard = ({ title, value, subtext }) => (
   <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
@@ -34,7 +35,7 @@ export default function Dashboard() {
       {error && <div className="text-red-500 mb-4 p-4 bg-red-50 rounded">Error: {error}</div>}
 
       {/* Global Header with Interactive Dropdown */}
-      <header className="flex justify-between items-center mb-8">
+      <header className="pt-20 flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold text-gray-900">aUToronto Simulation Dashboard</h1>
         
         <div className="flex gap-4">
@@ -62,9 +63,10 @@ export default function Dashboard() {
             >
               <option value="All">All Branches</option>
               <option value="master">master</option>
-              <option value="r2y5-simulation">r2y5-simulation</option>
+              <option value="r2y5_simulation">r2y5_simulation</option>
               <option value="r2y5-sim-cicd">r2y5-sim-cicd</option>
               <option value="simulation-CICD">simulation-CICD</option>
+              <option value="autopath">autopath</option>
             </select>
           </div>
           
@@ -196,6 +198,17 @@ export default function Dashboard() {
             <PipelineList pipelines={pipelines} />
         </div>
       )}
+      <button
+      onClick={() => setActiveTab('ai')}
+      className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
+        activeTab === 'ai' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
+      }`}
+    >
+      AI Agent
+    </button>
+
+    {/* Inside the content area */}
+    {activeTab === 'ai' && <AIChat />}
 
     </div>
   );
