@@ -156,7 +156,7 @@ export function useDashboardData(days, branch='All') {
         console.log(`Computed Metrics - Total: ${total}, Pass Rate: ${passRate}, Avg Time: ${avgTime} mins`);
         const formattedPipelines = processedPipelines
             .filter(p => p.durationSeconds <= 3600) 
-            .slice(0, 20)
+            .slice(0, 50)
             .map(p => ({
                 id: p.id,
                 time: Math.round(p.durationSeconds / 60) + 'm',

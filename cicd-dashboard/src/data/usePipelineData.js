@@ -2,7 +2,7 @@
 
 export const PIPELINE_DETAILS = {
   "100021": {
-    scenarioName: "Green traffic light",
+    scenarioName: "Urban Right Turn - Day",
     ciLink: "www.gitlab.com",
     branch: "autopath",
     lat: 42.300805, 
