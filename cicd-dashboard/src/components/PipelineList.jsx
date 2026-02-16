@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import { PIPELINE_DETAILS } from '../data/usePipelineData';
 import { SCENARIOS } from '../data/scenarios';
-import { fetchCommitDiff, fetchCommitDetails, fetchAITriage } from '../services/aiTriage';
+import { fetchCommitDiff, fetchCommitDetails, fetchAITriage, fetchPipelineDetails } from '../services/aiTriage';
 import CleanMap from './CleanMap';
 import OSMMap from './OSMMap';
 import SimulationMap from './SimulationMap';
@@ -38,11 +38,24 @@ export default function PipelineList({ pipelines }) {
     const id = pipeline.id;
     setTriageState((prev) => ({ ...prev, [id]: { loading: true, result: null, error: null } }));
     try {
+      // Fetch full pipeline details if sha/ref missing (list endpoint may return minimal data)
+      let fullPipeline = { ...pipeline };
+      if (!pipeline.sha || !pipeline.ref) {
+        const details = await fetchPipelineDetails(pipeline.id);
+        if (details) {
+          fullPipeline = {
+            ...pipeline,
+            sha: details.sha ?? pipeline.sha,
+            ref: details.ref ?? pipeline.ref,
+            created_at: details.created_at ?? pipeline.created_at,
+          };
+        }
+      }
       const [diff, commitDetails] = await Promise.all([
-        pipeline.sha ? fetchCommitDiff(pipeline.sha) : null,
-        pipeline.sha ? fetchCommitDetails(pipeline.sha) : null,
+        fullPipeline.sha ? fetchCommitDiff(fullPipeline.sha) : null,
+        fullPipeline.sha ? fetchCommitDetails(fullPipeline.sha) : null,
       ]);
-      const result = await fetchAITriage(pipeline, diff, commitDetails, metrics);
+      const result = await fetchAITriage(fullPipeline, diff, commitDetails, metrics);
       setTriageState((prev) => ({ ...prev, [id]: { loading: false, result, error: null } }));
     } catch (err) {
       setTriageState((prev) => ({

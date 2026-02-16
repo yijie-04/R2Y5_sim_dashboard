@@ -1,11 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Trash2, Loader2, AlertTriangle } from 'lucide-react';
+import { Send, Bot, User, Trash2, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { buildFailureExamplePrompt, TRIAGE_SYSTEM_PROMPT } from '../data/failureExample';
 
 const LLM_URL = import.meta.env.VITE_LLM_URL || "https://disc-somebody-chess-intelligence.trycloudflare.com";
 const OLLAMA_MODEL = import.meta.env.VITE_OLLAMA_MODEL || "llama3";
 const CHAT_PATH = import.meta.env.VITE_LLM_CHAT_PATH || "/api/chat";
+
+const AI_AGENT_SYSTEM_PROMPT = `You are the aUToronto AI Agent, an assistant for the aUToronto autonomous vehicle simulation team at the University of Toronto.
+
+**Repository context:** This dashboard monitors a GitLab CI/CD pipeline for an autonomous driving simulation repository. Pipelines run simulation scenarios to validate the vehicle's control stack (path planning, localization, steering, acceleration, torque).
+
+**Simulation scenarios:** Each pipeline runs multiple scenarios (e.g., double lane change, north circle, localization challenge course). Scenarios are evaluated on:
+- General metrics: collision count, traffic sign behaviour, destination reached, path length, completion time
+- Control metrics: max solve time, torque, steer, acceleration
+
+**Branches:** Common branches include master, r2y5_simulation, r2y5-sim-cicd, autopath, simulation-CICD.
+
+Answer questions about pipelines, simulation results, failures, and metrics in a concise, technical way. If the user asks about a specific pipeline and you don't have its data, say so and suggest they use the triage feature on the Individual Pipelines tab.`;
 
 export default function AIChat() {
   const [messages, setMessages] = useState([]);
@@ -64,15 +75,7 @@ export default function AIChat() {
     if (!input.trim()) return;
     const userMsg = { role: 'user', content: input };
     setInput('');
-    sendToLLM(userMsg);
-  };
-
-  const analyzeFailureExample = () => {
-    const prompt = buildFailureExamplePrompt();
-    sendToLLM(
-      { content: 'Analyze this failed pipeline run (Pipeline #100099, Scenario 2 - 90° turn)', _apiContent: prompt },
-      TRIAGE_SYSTEM_PROMPT
-    );
+    sendToLLM(userMsg, AI_AGENT_SYSTEM_PROMPT);
   };
 
   return (
@@ -95,17 +98,9 @@ export default function AIChat() {
       {/* Message Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
         {messages.length === 0 && (
-          <div className="text-center text-gray-400 mt-10 space-y-4">
+          <div className="text-center text-gray-400 mt-10">
             <Bot size={48} className="mx-auto mb-2 opacity-20" />
             <p>Ask me about the CI/CD pipeline or simulation results.</p>
-            <button
-              onClick={analyzeFailureExample}
-              disabled={isTyping}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors disabled:opacity-50"
-            >
-              <AlertTriangle size={18} />
-              Analyze failure example
-            </button>
           </div>
         )}
         

@@ -162,7 +162,12 @@ export function useDashboardData(days, branch='All') {
             .map(p => ({
                 id: p.id,
                 time: Math.round(p.durationSeconds / 60) + 'm',
-                status: p.status === 'success' ? 'Pass' : 'Fail'
+                status: p.status === 'success' ? 'Pass' : 'Fail',
+                sha: p.sha,
+                ref: p.ref,
+                created_at: p.created_at,
+                web_url: p.web_url,
+                durationSeconds: p.durationSeconds,
             }));
         
         // Scenarios Chart (Runs per Day)

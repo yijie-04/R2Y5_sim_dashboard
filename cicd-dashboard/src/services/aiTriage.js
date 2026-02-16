@@ -6,11 +6,29 @@
 const GITLAB_API = "https://gitlab.com/api/v4";
 const PROJECT_ID = import.meta.env.VITE_GITLAB_PROJECT_ID;
 const TOKEN = import.meta.env.VITE_GITLAB_TOKEN;
-const LLM_URL = import.meta.env.VITE_LLM_URL || "https://disc-somebody-chess-intelligence.trycloudflare.com";
+const LLM_URL = import.meta.env.VITE_LLM_URL;
 const OLLAMA_MODEL = import.meta.env.VITE_OLLAMA_MODEL || "llama3";
 // If VITE_LLM_URL is the full chat endpoint (e.g. https://xxx.trycloudflare.com/api/chat), use as-is.
 // Otherwise append this path. Override via VITE_LLM_CHAT_PATH if your setup differs.
 const CHAT_PATH = import.meta.env.VITE_LLM_CHAT_PATH || "/api/chat"; 
+
+/**
+ * Fetch full pipeline details (includes sha, ref) when list response is minimal
+ */
+export async function fetchPipelineDetails(pipelineId) {
+  if (!PROJECT_ID || !TOKEN || !pipelineId) return null;
+  try {
+    const res = await fetch(
+      `${GITLAB_API}/projects/${PROJECT_ID}/pipelines/${pipelineId}`,
+      { headers: { "PRIVATE-TOKEN": TOKEN } }
+    );
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
+    console.error("Failed to fetch pipeline details:", err);
+    return null;
+  }
+}
 
 /**
  * Fetch commit diff from GitLab for a pipeline's commit
@@ -67,6 +85,8 @@ function buildTriageContext(pipeline, diff, commitDetails, metrics) {
       parts.push(`- Full message: ${commitDetails.message}`);
     }
     parts.push(`- Author: ${commitDetails.author_name} <${commitDetails.author_email}>`);
+  } else {
+    parts.push("- Commit details: (not available - focus analysis on pipeline status and simulation metrics)");
   }
   if (metrics) {
     const generalStr = metrics.generalMetrics?.map((m) => `  - ${m.label}: ${m.value}`).join("\n") || "";
@@ -78,20 +98,22 @@ function buildTriageContext(pipeline, diff, commitDetails, metrics) {
   if (diff) {
     parts.push("\n## Code Diff\n```diff\n" + diff + "\n```");
   } else {
-    parts.push("\n(No code diff available for this commit)");
+    parts.push("\n## Code Diff\n(Not available - analyze based on pipeline status and simulation metrics above)");
   }
   return parts.join("\n");
 }
 
 const TRIAGE_SYSTEM_PROMPT = `You are an expert CI/CD triage assistant for the aUToronto simulation team. Your job is to analyze pipeline runs and help engineers understand failures or successes.
 
-Given a pipeline's status, branch, duration, commit message, simulation metrics, and code diff, provide:
-1. A brief summary of what changed in this commit
-2. If the pipeline failed: likely causes and suggested next steps
-3. If the pipeline passed: any notable changes or risks to watch
-4. Actionable recommendations
+You will receive pipeline context: status, branch, duration, simulation metrics, and optionally commit message and code diff. Analyze whatever is provided.
 
-Be concise and technical. Section each response into a separate paragraph in English. Start with 'Code Change Summary'. Focus on simulation/autonomous driving context when relevant.`;
+Always provide useful triage. Do NOT say "the pipeline run did not include" or refuse to analyze. Instead:
+1. If commit/diff available: summarize changes and relate to the outcome
+2. If only pipeline info and metrics: analyze based on status and simulation metrics (collision count, destination reached, control metrics, etc.)
+3. If pipeline failed: suggest likely causes from the metrics and next steps
+4. If pipeline passed: note any risks or observations from the metrics
+
+Be concise and technical. Use clear section headers. Focus on simulation/autonomous driving context when relevant.`;
 
 /**
  * Send pipeline context to LLM and return triage analysis
