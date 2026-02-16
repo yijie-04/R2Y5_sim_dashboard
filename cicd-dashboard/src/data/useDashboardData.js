@@ -142,13 +142,15 @@ export function useDashboardData(days, branch='All') {
             };
             });
 
-        // Metrics
+        // Metrics: total and pass rate from all pipelines returned by API
         const total = rawPipelines.length;
-        const successCount = rawPipelines.filter(p => p.status === 'success').length;
-        const passRate = total ? Math.round((successCount / total) * 100) + '%' : '0%';
         
-        const validRuns = processedPipelines.filter(p => p.durationSeconds > 300 && p.durationSeconds < 3600); // Ignore runs < 1 min (noise)
+        const validRuns = processedPipelines.filter(p => p.durationSeconds > 600 && p.durationSeconds < 3600); // Ignore runs < 1 min (noise)
         const totalSeconds = validRuns.reduce((acc, p) => acc + p.durationSeconds, 0);
+        const successCount = validRuns.filter(p => p.status === 'success').length;
+
+        const passRate = total ? Math.round((successCount / validRuns.length) * 100) + '%' : '0%';
+
         const avgTime = validRuns.length 
             ? Math.round((totalSeconds / validRuns.length) / 60) 
             : 0;

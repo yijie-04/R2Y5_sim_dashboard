@@ -1,5 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Trash2, Loader2 } from 'lucide-react';
+import { Send, Bot, User, Trash2, Loader2, AlertTriangle } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import { buildFailureExamplePrompt, TRIAGE_SYSTEM_PROMPT } from '../data/failureExample';
+
+const LLM_URL = import.meta.env.VITE_LLM_URL || "https://disc-somebody-chess-intelligence.trycloudflare.com";
+const OLLAMA_MODEL = import.meta.env.VITE_OLLAMA_MODEL || "llama3";
+const CHAT_PATH = import.meta.env.VITE_LLM_CHAT_PATH || "/api/chat";
 
 export default function AIChat() {
   const [messages, setMessages] = useState([]);
@@ -12,25 +18,37 @@ export default function AIChat() {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
-
-    const userMsg = { role: 'user', content: input };
-    setMessages(prev => [...prev, userMsg]);
-    setInput('');
+  const sendToLLM = async (userMsg, systemPrompt) => {
+    const displayMsg = { role: 'user', content: userMsg.content };
+    setMessages(prev => [...prev, displayMsg]);
     setIsTyping(true);
 
+    const apiUserMsg = { role: 'user', content: userMsg._apiContent ?? userMsg.content };
+    const apiMessages = systemPrompt
+      ? [{ role: 'system', content: systemPrompt }, ...messages, apiUserMsg]
+      : [...messages, apiUserMsg];
+
     try {
-      const res = await fetch('http://localhost:5000/api/chat', {
+      const base = LLM_URL.replace(/\/$/, "");
+      const chatUrl = base.includes("/api/") ? base : `${base}${CHAT_PATH.startsWith("/") ? "" : "/"}${CHAT_PATH}`;
+      const res = await fetch(chatUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: [...messages, userMsg] }),
+        body: JSON.stringify({
+          model: OLLAMA_MODEL,
+          messages: apiMessages,
+          stream: false,
+        }),
       });
 
       if (!res.ok) throw new Error('Server unreachable');
 
       const data = await res.json();
-      setMessages(prev => [...prev, data]);
+      // Ollama returns { message: { role, content } }
+      const assistantMsg = data.message
+        ? { role: 'assistant', content: data.message.content }
+        : data;
+      setMessages(prev => [...prev, assistantMsg]);
     } catch (err) {
       console.error("Chat error:", err);
       setMessages(prev => [...prev, { 
@@ -40,6 +58,21 @@ export default function AIChat() {
     } finally {
       setIsTyping(false);
     }
+  };
+
+  const handleSend = () => {
+    if (!input.trim()) return;
+    const userMsg = { role: 'user', content: input };
+    setInput('');
+    sendToLLM(userMsg);
+  };
+
+  const analyzeFailureExample = () => {
+    const prompt = buildFailureExamplePrompt();
+    sendToLLM(
+      { content: 'Analyze this failed pipeline run (Pipeline #100099, Scenario 2 - 90° turn)', _apiContent: prompt },
+      TRIAGE_SYSTEM_PROMPT
+    );
   };
 
   return (
@@ -62,9 +95,17 @@ export default function AIChat() {
       {/* Message Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
         {messages.length === 0 && (
-          <div className="text-center text-gray-400 mt-10">
+          <div className="text-center text-gray-400 mt-10 space-y-4">
             <Bot size={48} className="mx-auto mb-2 opacity-20" />
             <p>Ask me about the CI/CD pipeline or simulation results.</p>
+            <button
+              onClick={analyzeFailureExample}
+              disabled={isTyping}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors disabled:opacity-50"
+            >
+              <AlertTriangle size={18} />
+              Analyze failure example
+            </button>
           </div>
         )}
         
@@ -74,12 +115,16 @@ export default function AIChat() {
               <div className={`p-2 rounded-full ${m.role === 'user' ? 'bg-blue-100' : 'bg-gray-100'}`}>
                 {m.role === 'user' ? <User size={16} className="text-blue-600" /> : <Bot size={16} className="text-gray-600" />}
               </div>
-              <div className={`p-3 rounded-2xl text-sm ${
+              <div className={`p-3 rounded-2xl text-sm [&_strong]:font-semibold [&_code]:bg-black/10 [&_code]:px-1 [&_code]:rounded [&_pre]:bg-black/10 [&_pre]:p-2 [&_pre]:rounded [&_pre]:overflow-x-auto [&_ul]:list-disc [&_ul]:ml-4 [&_ol]:list-decimal [&_ol]:ml-4 ${
                 m.role === 'user' 
                   ? 'bg-blue-600 text-white rounded-tr-none' 
                   : 'bg-gray-100 text-gray-800 rounded-tl-none border border-gray-200'
               }`}>
-                {m.content}
+                {m.role === 'assistant' ? (
+                  <ReactMarkdown>{m.content}</ReactMarkdown>
+                ) : (
+                  m.content
+                )}
               </div>
             </div>
           </div>

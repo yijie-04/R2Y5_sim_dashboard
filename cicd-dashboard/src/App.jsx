@@ -1,6 +1,6 @@
 import React, { useState } from 'react'; 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { Search, User, Loader2, Calendar } from 'lucide-react'; 
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Search, User, Loader2, Calendar, Bot } from 'lucide-react'; // 1. Added Bot icon
 import { useDashboardData } from './data/useDashboardData';
 import PipelineList from './components/PipelineList.jsx';
 import AIChat from './components/chat.jsx';
@@ -34,8 +34,8 @@ export default function Dashboard() {
       
       {error && <div className="text-red-500 mb-4 p-4 bg-red-50 rounded">Error: {error}</div>}
 
-      {/* Global Header with Interactive Dropdown */}
-      <header className="pt-20 flex justify-between items-center mb-8">
+      {/* Global Header */}
+      <header className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold text-gray-900">aUToronto Simulation Dashboard</h1>
         
         <div className="flex gap-4">
@@ -87,15 +87,13 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* TAB NAVIGATION */}
-      <div className="bg-gray-100 p-1 rounded-lg inline-flex">
+      {/* --- 2. UPDATED TAB NAVIGATION --- */}
+      <div className="bg-gray-100 p-1 rounded-lg inline-flex mb-8">
           <button
             onClick={() => setActiveTab('dashboard')}
             className={`
               px-4 py-1.5 text-sm font-medium rounded-md transition-all
-              ${activeTab === 'dashboard'
-                ? 'bg-white text-gray-900 shadow-sm'   // Active Style (White Pill)
-                : 'text-gray-500 hover:text-gray-900'}  // Inactive Style
+              ${activeTab === 'dashboard' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'}
             `}
           >
             Simulation Metrics
@@ -105,26 +103,34 @@ export default function Dashboard() {
             onClick={() => setActiveTab('details')}
             className={`
               px-4 py-1.5 text-sm font-medium rounded-md transition-all
-              ${activeTab === 'details'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-900'}
+              ${activeTab === 'details' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'}
             `}
           >
             Individual Pipelines
+          </button>
+
+          {/* NEW AI TAB BUTTON */}
+          <button
+            onClick={() => setActiveTab('ai')}
+            className={`
+              px-4 py-1.5 text-sm font-medium rounded-md transition-all flex items-center gap-2
+              ${activeTab === 'ai' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-900'}
+            `}
+          >
+            <Bot size={16} />
+            AI Agent
           </button>
         </div>
 
       {/* --- TAB 1: SIMULATION METRICS --- */}
       {activeTab === 'dashboard' && (
         <>
-          {/* Top Metrics Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 mt-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <MetricCard title="Total Pipelines Run" value={metrics.total} subtext={`In the last ${selectedDays} days`} />
             <MetricCard title="Pass Rate" value={metrics.passRate} subtext="Success / Total" />
             <MetricCard title="Runtime per pipeline (mins)" value={metrics.avgTime} subtext="Average Duration" />
           </div>
 
-          {/* Pipelines Chart */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
               <h3 className="font-semibold mb-6">Scenarios Trend</h3>
@@ -141,7 +147,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Contributors List */}
             <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
               <h3 className="font-semibold mb-4">Contributors</h3>
               {contributors.map((c, i) => (
@@ -157,10 +162,9 @@ export default function Dashboard() {
               ))}
             </div>
           </div>
-
-          {/* Recent Pipelines Table */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-3 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+          
+           {/* Recent Pipelines Table (Kept for Dashboard view) */}
+           <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm mb-8">
               <h3 className="font-semibold mb-4">Recent Pipelines</h3>
               <table className="w-full text-sm text-left">
                 <thead className="text-gray-500 border-b">
@@ -171,7 +175,7 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {pipelines.map((p) => (
+                  {pipelines.slice(0, 5).map((p) => (
                     <tr key={p.id} className="border-b last:border-0">
                       <td className="py-3 font-medium">#{p.id}</td>
                       <td className="py-3 text-right">{p.time}</td>
@@ -183,32 +187,31 @@ export default function Dashboard() {
                 </tbody>
               </table>
             </div>
-          </div>
         </>
       )}
 
       {/* --- TAB 2: INDIVIDUAL PIPELINES --- */}
       {activeTab === 'details' && (
-        <div className="animate-fade-in mt-12">
+        <div className="animate-fade-in">
             <h2 className="text-lg font-semibold text-gray-800 mb-4">
                 Pipeline Runs ({pipelines.length})
             </h2>
-            
-            {/* 2. Use the component and pass the filtered pipelines */}
             <PipelineList pipelines={pipelines} />
         </div>
       )}
-      <button
-      onClick={() => setActiveTab('ai')}
-      className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
-        activeTab === 'ai' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
-      }`}
-    >
-      AI Agent
-    </button>
 
-    {/* Inside the content area */}
-    {activeTab === 'ai' && <AIChat />}
+      {/* --- 3. TAB 3: AI AGENT (NEW CONTAINER) --- */}
+      {activeTab === 'ai' && (
+        <div className="animate-fade-in">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">
+                AI Analysis Agent
+            </h2>
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm h-[600px] overflow-hidden">
+              {/* Passing data props in case your AI needs context later */}
+              <AIChat context={{ metrics, pipelines, selectedBranch }} />
+            </div>
+        </div>
+      )}
 
     </div>
   );
