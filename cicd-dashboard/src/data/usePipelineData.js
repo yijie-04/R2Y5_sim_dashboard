@@ -37,7 +37,7 @@ const baseMetrics = {
 
 export const PIPELINE_DETAILS = {
   sce_1: {
-    scenarioName: "Scenario 1",
+    scenarioName: "Scenario 1 - Double lane change lower straight way",
     ciLink: "www.gitlab.com",
     branch: "autopath",
     lat: 42.300805,
@@ -45,8 +45,8 @@ export const PIPELINE_DETAILS = {
     zoom: 16.7,
     ...baseMetrics
   },
-  sce_2_fail: {
-    scenarioName: "Scenario 2",
+  sce_2: {
+    scenarioName: "Scenario 2 - Double lane change upper straight way",
     ciLink: "www.gitlab.com",
     branch: "r2y5_simulation",
     lat: 42.300993,
@@ -59,7 +59,7 @@ export const PIPELINE_DETAILS = {
     speedChart: baseMetrics.speedChart
   },
   sce_3: {
-    scenarioName: "Scenario 3",
+    scenarioName: "Scenario 3 - North circle",
     ciLink: "www.gitlab.com",
     branch: "r2y5_simulation",
     lat: 42.299497,
@@ -68,16 +68,7 @@ export const PIPELINE_DETAILS = {
     ...baseMetrics
   },
   sce_4: {
-    scenarioName: "Scenario 4",
-    ciLink: "www.gitlab.com",
-    branch: "r2y5_simulation",
-    lat: 42.299497,
-    lng: -83.698180,
-    zoom: 16.7,
-    ...baseMetrics
-  },
-  sce_5: {
-    scenarioName: "Scenario 5",
+    scenarioName: "Scenario 4 - Localization challenge course",
     ciLink: "www.gitlab.com",
     branch: "r2y5_simulation",
     lat: 42.299497,

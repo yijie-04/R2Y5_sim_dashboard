@@ -69,9 +69,9 @@ export default function PipelineList({ pipelines }) {
         const selectedScenario = scenarioByPipeline[p.id] || 'sce_1';
         const scenarioDetails = PIPELINE_DETAILS[selectedScenario] || PIPELINE_DETAILS.sce_1;
         const scenarioConfig = SCENARIOS.find((s) => s.id === selectedScenario) || SCENARIOS[0];
-        // Pass pipeline: all scenarios show passed metrics. Fail pipeline: only sce_2_fail shows failed metrics.
+        // Pass pipeline: all scenarios show passed metrics. Fail pipeline: only sce_2 shows failed metrics.
         const isPipelineFailed = p.status === 'Fail';
-        const useFailedMetrics = isPipelineFailed && selectedScenario === 'sce_2_fail';
+        const useFailedMetrics = isPipelineFailed && selectedScenario === 'sce_2';
         const details = {
           ...scenarioDetails,
           generalMetrics: useFailedMetrics && scenarioDetails.generalMetricsFailed
@@ -102,9 +102,9 @@ export default function PipelineList({ pipelines }) {
               {/* ✅ Scenario Dropdown */}
               <div className="col-span-3 text-right">
                 <select
-                  value={selectedScenario[p.id] || ''}
+                  value={selectedScenario}
                   onChange={(e) =>
-                    setSelectedScenario(prev => ({
+                    setScenarioByPipeline(prev => ({
                       ...prev,
                       [p.id]: e.target.value
                     }))
@@ -141,8 +141,8 @@ export default function PipelineList({ pipelines }) {
                     </div>
                     <div className="relative rounded-lg overflow-hidden border border-gray-300 bg-gray-200 aspect-square">
                       <SimulationMap 
-                        latCsv={scenarioConfig.latCsv} 
-                        lngCsv={scenarioConfig.lngCsv} 
+                        latCsv={isPipelineFailed && scenarioConfig.latCsvFail ? scenarioConfig.latCsvFail : scenarioConfig.latCsv} 
+                        lngCsv={isPipelineFailed && scenarioConfig.lngCsvFail ? scenarioConfig.lngCsvFail : scenarioConfig.lngCsv} 
                       />
                     </div>
                   </div>

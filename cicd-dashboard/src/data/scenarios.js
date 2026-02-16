@@ -8,10 +8,12 @@ export const SCENARIOS = [
     thetaCsv: './example/_theta_.csv',
   },
   {
-    id: 'sce_2_fail',
+    id: 'sce_2',
     label: 'Scenario 2',
-    latCsv: './example/sce_2_lat_fail.csv',
-    lngCsv: './example/sce_2_lon_fail.csv',
+    latCsv: './example/sce_2_lat.csv',
+    lngCsv: './example/sce_2_lon.csv',
+    latCsvFail: './example/sce_2_lat_fail.csv',
+    lngCsvFail: './example/sce_2_lon_fail.csv',
     thetaCsv: './example/_theta_.csv',
   },
   {
@@ -27,12 +29,5 @@ export const SCENARIOS = [
     latCsv: './example/sce_4_lat.csv',
     lngCsv: './example/sce_4_lon.csv',
     thetaCsv: './example/_theta_.csv',
-  },
-  {
-    id: 'sce_5',
-    label: 'Scenario 5',
-    latCsv: './example/sce_5_lat.csv',
-    lngCsv: './example/sce_5_lon.csv',
-    thetaCsv: './example/_theta_.csv',
-  },
+  }
 ];
